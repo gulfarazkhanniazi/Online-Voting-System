@@ -1,11 +1,11 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:first_app/widgets/mainLayout.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/provider.dart';
 import '../services/auth_user.dart';
 import './login.dart';
+import '../widgets/mainLayout.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -23,7 +23,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final AuthService _authService = AuthService();
 
   bool isLoading = false;
-  String? _errorMessage; // <-- added error message state
+  String? _errorMessage;
 
   void _signup(BuildContext context) async {
     final name = nameController.text.trim();
@@ -41,7 +41,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
     setState(() {
       isLoading = true;
-      _errorMessage = null; // clear previous error
+      _errorMessage = null;
     });
 
     final result = await _authService.signup(
@@ -55,24 +55,18 @@ class _SignupScreenState extends State<SignupScreen> {
     setState(() => isLoading = false);
 
     if (result == 'Signup successful') {
-      // Clear error message
-      setState(() {
-        _errorMessage = null;
-      });
+      setState(() => _errorMessage = null);
 
-      // Update provider user data
       Provider.of<UserProvider>(
         context,
         listen: false,
       ).updateUser(name: name, email: email, cnic: cnic, role: 'user');
 
-      // Navigate to main app screen
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => MainLayout()),
+        MaterialPageRoute(builder: (_) => const MainLayout()),
       );
     } else {
-      // Show error message on screen (red text)
       setState(() {
         _errorMessage = result;
       });
@@ -120,10 +114,9 @@ class _SignupScreenState extends State<SignupScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Show error message in red (if any)
             if (_errorMessage != null)
               Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: 12),
                 child: Text(
                   _errorMessage!,
                   style: const TextStyle(color: Colors.red),
@@ -135,7 +128,14 @@ class _SignupScreenState extends State<SignupScreen> {
               onPressed: isLoading ? null : () => _signup(context),
               child:
                   isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
                       : const Text('Sign Up'),
             ),
 

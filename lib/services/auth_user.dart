@@ -95,7 +95,7 @@ class AuthService {
 
       // Fetch user data from Firestore using UID
       final doc = await _firestore.collection('users').doc(fbUser.uid).get();
-      if (!doc.exists) throw Exception('User data not found.');
+      if (!doc.exists) throw Exception('User not found.');
 
       final data = doc.data()!;
       final user = User.fromJson(data);

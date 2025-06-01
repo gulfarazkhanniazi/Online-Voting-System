@@ -20,12 +20,12 @@ class _LoginScreenState extends State<LoginScreen> {
   final AuthService _authService = AuthService();
 
   bool isLoading = false;
+  String? errorMessage; // <-- For inline error display
 
   @override
   void initState() {
     super.initState();
 
-    // Check if user is already logged in and redirect immediately
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       if (userProvider.isLoggedIn) {
@@ -37,8 +37,18 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  void _login(BuildContext context) async {
-    setState(() => isLoading = true);
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _login(BuildContext context) async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null; // clear previous errors on new attempt
+    });
 
     try {
       final user = await _authService.login(
@@ -54,22 +64,20 @@ class _LoginScreenState extends State<LoginScreen> {
           role: user.role,
         );
 
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Login successful')));
-
-        // Navigate to MainLayout after login success
+        // Navigate without showing SnackBar
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const MainLayout(initialIndex: 0)),
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
+      setState(() {
+        errorMessage = e.toString().replaceFirst('Exception: ', '');
+      });
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -81,30 +89,61 @@ class _LoginScreenState extends State<LoginScreen> {
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
+            const SizedBox(height: 40),
             const Center(
               child: Text(
                 'Welcome Back',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 40),
             TextField(
               controller: emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                prefixIcon: Icon(Icons.email),
+                border: OutlineInputBorder(),
+              ),
               keyboardType: TextInputType.emailAddress,
             ),
+            const SizedBox(height: 20),
             TextField(
               controller: passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
+              decoration: const InputDecoration(
+                labelText: 'Password',
+                prefixIcon: Icon(Icons.lock),
+                border: OutlineInputBorder(),
+              ),
               obscureText: true,
             ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: isLoading ? null : () => _login(context),
-              child:
-                  isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Login'),
+            const SizedBox(height: 12),
+
+            // Show inline error if exists
+            if (errorMessage != null) ...[
+              Text(
+                errorMessage!,
+                style: const TextStyle(color: Colors.red, fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+            ],
+
+            SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                onPressed: isLoading ? null : () => _login(context),
+                child:
+                    isLoading
+                        ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                        : const Text('Login', style: TextStyle(fontSize: 18)),
+              ),
             ),
             const SizedBox(height: 20),
             Row(
