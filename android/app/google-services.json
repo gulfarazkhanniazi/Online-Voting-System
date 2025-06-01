@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "406693059088",
+    "project_id": "semester-app-project-79c03",
+    "storage_bucket": "semester-app-project-79c03.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:406693059088:android:d14c5a880abc2f9fdd0895",
+        "android_client_info": {
+          "package_name": "com.example.first_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbHYaXzGTlJTbeCuZYQChoMmt6xO9uw2s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
