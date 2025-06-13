@@ -3,7 +3,7 @@ class Election {
   String title;
   DateTime startDate;
   DateTime endDate;
-  Map<String, int> candidates; // string as name, int as vote count
+  Map<String, int> candidates; // candidateId -> vote count
 
   Election({
     required this.id,
@@ -25,15 +25,11 @@ class Election {
 
   factory Election.fromJson(Map<String, dynamic> json) {
     return Election(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      startDate: DateTime.parse(json['startDate'] as String),
-      endDate: DateTime.parse(json['endDate'] as String),
-      candidates: Map<String, int>.from(
-        json['candidates'].map(
-          (key, value) => MapEntry(key as String, value as int),
-        ),
-      ),
+      id: json['id'],
+      title: json['title'],
+      startDate: DateTime.parse(json['startDate']),
+      endDate: DateTime.parse(json['endDate']),
+      candidates: Map<String, int>.from(json['candidates']),
     );
   }
 }

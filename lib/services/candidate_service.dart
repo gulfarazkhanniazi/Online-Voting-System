@@ -47,6 +47,15 @@ class CandidateService {
     }
   }
 
+  Future<Candidate?> getCandidateById(String id) async {
+    final doc =
+        await FirebaseFirestore.instance.collection('candidates').doc(id).get();
+    if (doc.exists) {
+      return Candidate.fromJson(doc.data()!..['id'] = doc.id);
+    }
+    return null;
+  }
+
   /// Delete a candidate (only for admin users)
   Future<String> deleteCandidate(String id) async {
     if (!_isUserLoggedIn) return 'User is not authenticated.';

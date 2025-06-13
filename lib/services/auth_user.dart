@@ -37,7 +37,6 @@ class AuthService {
       return 'CNIC must be at least 12 digits and numeric.';
     }
 
-    // Check if CNIC already exists in Firestore
     final existingCnic =
         await _firestore
             .collection('users')
@@ -46,14 +45,12 @@ class AuthService {
     if (existingCnic.docs.isNotEmpty) return 'CNIC already exists.';
 
     try {
-      // Create user in Firebase Auth
       final fb_auth.UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(email: email, password: password);
 
       final fb_auth.User? fbUser = userCredential.user;
       if (fbUser == null) return 'Failed to create user.';
 
-      // Create user model with Firebase UID
       final user = User(
         id: fbUser.uid,
         name: name,
@@ -62,21 +59,18 @@ class AuthService {
         cnic: cnic,
       );
 
-      // Save user data to Firestore
-      await _firestore.collection('users').doc(fbUser.uid).set(user.toJson());
+      await _firestore.collection('users').doc(fbUser.uid).set({
+        ...user.toJson(),
+        'votedElections': [],
+      });
 
       return 'Signup successful';
     } on fb_auth.FirebaseAuthException catch (e) {
-      // Handle Firebase Auth errors
-      if (e.code == 'email-already-in-use') {
-        return 'Email already exists.';
-      } else if (e.code == 'weak-password') {
-        return 'The password provided is too weak.';
-      } else {
-        return e.message ?? 'An error occurred during signup.';
-      }
+      if (e.code == 'email-already-in-use') return 'Email already exists.';
+      if (e.code == 'weak-password') return 'Password too weak.';
+      return e.message ?? 'An error occurred during signup.';
     } catch (e) {
-      return 'An unexpected error occurred: $e';
+      return 'Unexpected error: $e';
     }
   }
 
@@ -86,29 +80,20 @@ class AuthService {
     }
 
     try {
-      // Sign in with Firebase Auth
       final fb_auth.UserCredential userCredential = await _auth
           .signInWithEmailAndPassword(email: email, password: password);
 
       final fb_auth.User? fbUser = userCredential.user;
-      if (fbUser == null) throw Exception('User not found after login.');
+      if (fbUser == null) throw Exception('User not found.');
 
-      // Fetch user data from Firestore using UID
       final doc = await _firestore.collection('users').doc(fbUser.uid).get();
-      if (!doc.exists) throw Exception('User not found.');
+      if (!doc.exists) throw Exception('User data not found.');
 
-      final data = doc.data()!;
-      final user = User.fromJson(data);
-
-      return user;
+      return User.fromJson(doc.data()!);
     } on fb_auth.FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        throw Exception('User not found.');
-      } else if (e.code == 'wrong-password') {
-        throw Exception('Incorrect password.');
-      } else {
-        throw Exception(e.message ?? 'Failed to login.');
-      }
+      if (e.code == 'user-not-found') throw Exception('User not found.');
+      if (e.code == 'wrong-password') throw Exception('Incorrect password.');
+      throw Exception(e.message ?? 'Login failed.');
     }
   }
 
@@ -116,9 +101,6 @@ class AuthService {
     await _auth.signOut();
   }
 
-  /// Return the current logged-in Firebase user
   fb_auth.User? get currentUser => _auth.currentUser;
-
-  /// Listen to auth state changes (login/logout)
   Stream<fb_auth.User?> authStateChanges() => _auth.authStateChanges();
 }

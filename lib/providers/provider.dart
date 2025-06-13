@@ -4,19 +4,15 @@ class UserProvider with ChangeNotifier {
   String _name = '';
   String _email = '';
   String _cnic = '';
-  String _role = ''; // 'admin' or 'user'
+  String _role = '';
 
-  // Getters
   String get name => _name;
   String get email => _email;
   String get cnic => _cnic;
   String get role => _role;
 
-  bool get isAdmin => _role == 'admin';
-  bool get isUser => _role == 'user';
   bool get isLoggedIn => _email.isNotEmpty;
 
-  // Update user after login/signup
   void updateUser({
     required String name,
     required String email,
@@ -30,7 +26,6 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Clear user on logout
   void clearUser() {
     _name = '';
     _email = '';

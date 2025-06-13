@@ -44,6 +44,7 @@ class _SignupScreenState extends State<SignupScreen> {
       _errorMessage = null;
     });
 
+    // Inside _signup():
     final result = await _authService.signup(
       name: name,
       email: email,
@@ -52,11 +53,7 @@ class _SignupScreenState extends State<SignupScreen> {
       cnic: cnic,
     );
 
-    setState(() => isLoading = false);
-
     if (result == 'Signup successful') {
-      setState(() => _errorMessage = null);
-
       Provider.of<UserProvider>(
         context,
         listen: false,
@@ -67,9 +64,7 @@ class _SignupScreenState extends State<SignupScreen> {
         MaterialPageRoute(builder: (_) => const MainLayout()),
       );
     } else {
-      setState(() {
-        _errorMessage = result;
-      });
+      setState(() => _errorMessage = result);
     }
   }
 
